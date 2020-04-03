@@ -40,7 +40,37 @@ ELSE(VERBOSE)
 ENDIF(VERBOSE)
 
 # This executes code that sets the compile flags for DEBUG, RELEASE, and TESTING.
-INCLUDE(${CMAKE_MODULE_PATH}/SetFortranFlags.cmake)
+# This executes code that sets the compile flags for DEBUG, RELEASE, and TESTING.
+# INCLUDE(${CMAKE_MODULE_PATH}/SetFortranFlags.cmake)
+if(CMAKE_Fortran_COMPILER_ID MATCHES GNU) # this is gfortran
+  SET(CMAKE_Fortran_MODDIR_FLAG   "-J")
+  SET(CMAKE_Fortran_FLAGS         "-cpp -ffree-line-length-none") # -mcmodel=large  this is to remove the 2Gb limit of virtual memory allocation
+  SET(CMAKE_Fortran_FLAGS_TESTING "-O2 -funroll-loops")
+  SET(CMAKE_Fortran_FLAGS_DEBUG   "-O0 -p -g -Wsurprising -Waliasing -fwhole-file -fcheck=all -pedantic -fbacktrace -fbounds-check")
+  SET(CMAKE_Fortran_FLAGS_RELEASE "-O3 -march=native -mtune=native -funroll-loops") 
+  
+elseif(CMAKE_Fortran_COMPILER_ID MATCHES Intel)
+  SET(CMAKE_Fortran_MODDIR_FLAG   "-module ") #remember the ending white space here 
+  SET(CMAKE_Fortran_FLAGS         "-fpp")
+  SET(CMAKE_Fortran_FLAGS_TESTING "-O2 -ftz")
+  SET(CMAKE_Fortran_FLAGS_DEBUG   "-p -O0 -g -fpe1 -warn -debug extended -traceback -check all,noarg_temp_created")
+  SET(CMAKE_Fortran_FLAGS_RELEASE "-O3 -ftz")
+
+elseif(CMAKE_Fortran_COMPILER_ID MATCHES G95)
+  SET(CMAKE_Fortran_MODDIR_FLAG   "-fmod=")
+  SET(CMAKE_Fortran_FLAGS         "-cpp")
+  SET(CMAKE_Fortran_FLAGS_TESTING "-O1  -fsloppy-char")
+  SET(CMAKE_Fortran_FLAGS_DEBUG   "-O0 -g -ftrace=full")
+  SET(CMAKE_Fortran_FLAGS_RELEASE "-O3")
+  
+elseif(CMAKE_Fortran_COMPILER_ID MATCHES PGI)
+  SET(CMAKE_Fortran_MODDIR_FLAG   "-module ")
+  SET(CMAKE_Fortran_FLAGS         "-")
+  SET(CMAKE_Fortran_FLAGS         "")
+  SET(CMAKE_Fortran_FLAGS_DEBUG   "-g -O0 -Mframe")
+  SET(CMAKE_Fortran_FLAGS_RELEASE "-O3 -mcmodel=medium -fast -Munroll")
+endif()
+
 
 
 
